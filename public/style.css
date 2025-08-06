@@ -107,3 +107,11 @@ footer {
 footer i {
   font-style: normal;
 }
+
+.card.error {
+  border-left: 5px solid red;
+  background-color: #ffe5e5;
+  color: #a10000;
+  padding: 1rem;
+  margin-top: 1rem;
+}
