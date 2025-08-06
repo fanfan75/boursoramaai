@@ -3,22 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analyse Boursière IA</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.png" />
   <link rel="stylesheet" href="style.css" />
+  <title>Analyse Boursière IA</title>
 </head>
 <body>
   <main>
-    <h1>📊 Analyse Boursière IA</h1>
-    <form>
-      <input type="text" id="symbolInput" placeholder="Ex: BNP, AAPL, NVDA" required />
-      <button type="submit">Charger</button>
-    </form>
-    <div id="result"></div>
-    <footer>
-      📱 PWA • Données publiques Boursorama • IA TensorFlow.js
-    </footer>
+    <div class="container">
+      <h1>📊 Analyse Boursière IA</h1>
+      <form id="stock-form">
+        <input type="text" id="stock-input" placeholder="Entrez une ou plusieurs actions (ex: BNP, Hermès)" />
+        <button type="submit">Charger</button>
+      </form>
+
+      <div id="results" class="results-box"></div>
+      <footer>
+        📱 PWA • Données publiques Boursorama • IA TensorFlow.js
+      </footer>
+    </div>
   </main>
-  <script src="app.js"></script>
+  <script>
+    const form = document.getElementById("stock-form");
+    const input = document.getElementById("stock-input");
+    const results = document.getElementById("results");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      results.innerHTML = "<p>⏳ Chargement en cours...</p>";
+
+      try {
+        const query = input.value;
+        const response = await fetch(`/api/boursorama?symbols=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          results.innerHTML = `<p>❌ Erreur : ${data.error || "inconnue"}</p>`;
+          return;
+        }
+
+        results.innerHTML = data.map(stock => {
+          if (stock.error) {
+            return `<div class='card'><h2>${stock.name}</h2><p>❌ ${stock.error}</p></div>`;
+          }
+          return `
+            <div class="card">
+              <h2>${stock.name}</h2>
+              <p>💳 Prix : <strong>${stock.price}</strong></p>
+              <p>📉 Variation : <strong>${stock.variation}</strong></p>
+              <p>⏰ MAJ : ${stock.last_update}</p>
+            </div>
+          `;
+        }).join("");
+
+      } catch (err) {
+        results.innerHTML = "❌ Erreur réseau ou backend";
+      }
+    });
+  </script>
 </body>
 </html>
